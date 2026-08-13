@@ -22,14 +22,36 @@ async function main(): Promise<void> {
   const comments = await seedComments(prisma, users, requests);
   const auditLogs = await seedAuditLogs(prisma, users, requests, comments);
 
+  const highestSeededRequestNumber = requests.reduce((highest, request) => {
+    const requestNumberValue = Number(
+      request.requestNumber.replace("REQ-", ""),
+    );
+
+    return Number.isFinite(requestNumberValue)
+      ? Math.max(highest, requestNumberValue)
+      : highest;
+  }, 1000);
+
+  const existingCounter = await prisma.requestNumberCounter.findUnique({
+    where: { id: "request" },
+    select: { nextValue: true },
+  });
+
+  const nextValue = BigInt(
+    Math.max(
+      Number(existingCounter?.nextValue ?? 1001n),
+      highestSeededRequestNumber + 1,
+    ),
+  );
+
   await prisma.requestNumberCounter.upsert({
     where: { id: "request" },
     create: {
       id: "request",
-      nextValue: 1031n,
+      nextValue,
     },
     update: {
-      nextValue: 1031n,
+      nextValue,
     },
   });
 
