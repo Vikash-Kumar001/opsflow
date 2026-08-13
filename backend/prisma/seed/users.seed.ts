@@ -1,4 +1,4 @@
-import { Role } from "../../generated/prisma/enums.js";
+import { Role } from "../../src/generated/prisma/enums.js";
 import { hashPassword } from "../../src/services/auth/password.service.js";
 import { userIds } from "./demo-ids.js";
 import type { SeedPrismaClient } from "./types.js";

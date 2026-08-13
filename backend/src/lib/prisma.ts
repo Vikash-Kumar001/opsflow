@@ -26,7 +26,7 @@ let prisma: PrismaClientLike | undefined;
 
 export async function getPrismaClient(): Promise<PrismaClientLike> {
   if (!prisma) {
-    const clientModulePath = "../../generated/prisma/client.js";
+    const clientModulePath = "../generated/prisma/client.js";
     const generatedClient = (await import(clientModulePath)) as unknown as {
       PrismaClient: PrismaClientConstructor;
     };

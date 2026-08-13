@@ -2,7 +2,7 @@ import {
   RequestCategory,
   RequestPriority,
   RequestStatus,
-} from "../../generated/prisma/enums.js";
+} from "../../src/generated/prisma/enums.js";
 import { requestIds } from "./demo-ids.js";
 import type { SeedPrismaClient, SeedUsers } from "./types.js";
 

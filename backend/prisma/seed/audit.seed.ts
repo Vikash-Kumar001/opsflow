@@ -1,4 +1,7 @@
-import { AuditAction, AuditEntityType } from "../../generated/prisma/enums.js";
+import {
+  AuditAction,
+  AuditEntityType,
+} from "../../src/generated/prisma/enums.js";
 import { auditIds } from "./demo-ids.js";
 import type {
   SeedComment,

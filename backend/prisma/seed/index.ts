@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-import { PrismaClient } from "../../generated/prisma/client.js";
+import { PrismaClient } from "../../src/generated/prisma/client.js";
 import { seedAuditLogs } from "./audit.seed.js";
 import { seedComments } from "./comments.seed.js";
 import { seedRequests } from "./requests.seed.js";
