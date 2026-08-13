@@ -92,7 +92,7 @@ export function getAuthCookieOptions(
   return {
     httpOnly: true,
     secure: env.isProduction,
-    sameSite: "lax",
+    sameSite: env.isProduction ? "none" : "lax",
     maxAge: parseJwtExpiresInSeconds(env.JWT_EXPIRES_IN) * 1000,
     path: "/",
   };
@@ -104,7 +104,7 @@ export function getClearAuthCookieOptions(
   return {
     httpOnly: true,
     secure: env.isProduction,
-    sameSite: "lax",
+    sameSite: env.isProduction ? "none" : "lax",
     path: "/",
   };
 }

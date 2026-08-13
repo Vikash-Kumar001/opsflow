@@ -2,8 +2,8 @@ import type { RequestHandler } from "express";
 
 import { env } from "../../config/env.js";
 import { getPrismaClient } from "../../lib/prisma.js";
-import { createAuthAuditLog } from "../../repositories/shared/audit-log.repository.js";
 import { normalizeEmail } from "../../repositories/shared/auth-user.repository.js";
+import { tryCreateAuthAuditLog } from "../../services/auth/auth-audit.service.js";
 import { verifyLoginCredentials } from "../../services/auth/login.service.js";
 import {
   AUTH_COOKIE_NAME,
@@ -20,7 +20,7 @@ export const loginController: RequestHandler = async (req, res, next) => {
   try {
     const result = await verifyLoginCredentials(prisma, body, env);
 
-    await createAuthAuditLog(prisma, {
+    await tryCreateAuthAuditLog(prisma, {
       actorId: result.user.id,
       action: "LOGIN_SUCCESS",
       email: result.user.email,
@@ -33,7 +33,7 @@ export const loginController: RequestHandler = async (req, res, next) => {
     res.cookie(AUTH_COOKIE_NAME, result.token, getAuthCookieOptions(env));
     sendSuccess(res, { user: result.user });
   } catch (error) {
-    await createAuthAuditLog(prisma, {
+    await tryCreateAuthAuditLog(prisma, {
       action: "LOGIN_FAILED",
       email,
       correlationId: req.requestId,

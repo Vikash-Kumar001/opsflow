@@ -14,4 +14,13 @@ describe("logout service", () => {
       },
     });
   });
+
+  it("uses cross-site cookie clearing flags in production", () => {
+    expect(createLogoutSession({ isProduction: true }).cookieOptions).toEqual({
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+    });
+  });
 });

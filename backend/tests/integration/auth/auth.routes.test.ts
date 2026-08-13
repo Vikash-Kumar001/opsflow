@@ -18,6 +18,7 @@ const auditEntries: unknown[] = [];
 let users: AuthUserRecord[] = [];
 let app: typeof import("../../../src/app.js").app;
 let setPrismaClientForTesting: typeof import("../../../src/lib/prisma.js").setPrismaClientForTesting;
+let auditCreateShouldFail = false;
 
 beforeAll(async () => {
   Object.assign(process.env, testEnv);
@@ -31,6 +32,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   auditEntries.length = 0;
+  auditCreateShouldFail = false;
   users = [
     buildUser({
       id: "active-user-id",
@@ -94,6 +96,41 @@ describe("auth routes", () => {
     expect(auditEntries).toContainEqual(
       expect.objectContaining({ action: "LOGIN_FAILED" }),
     );
+  });
+
+  it("does not fail a valid login when auth audit logging fails", async () => {
+    auditCreateShouldFail = true;
+
+    const response = await request(app)
+      .post("/api/v1/auth/login")
+      .send({
+        email: "employee@opsflow.demo",
+        password: "Employee@123",
+      })
+      .expect(200);
+
+    expect(response.body.data.user).toMatchObject({
+      id: "active-user-id",
+      email: "employee@opsflow.demo",
+    });
+    expect(response.headers["set-cookie"]?.[0]).toContain("opsflow_session=");
+  });
+
+  it("preserves the invalid-credentials response when failed-login audit logging fails", async () => {
+    auditCreateShouldFail = true;
+
+    const response = await request(app)
+      .post("/api/v1/auth/login")
+      .send({
+        email: "employee@opsflow.demo",
+        password: "wrong-password",
+      })
+      .expect(401);
+
+    expect(response.body.error).toMatchObject({
+      code: "UNAUTHORIZED",
+      message: "Invalid email or password",
+    });
   });
 
   it("rejects inactive users during login", async () => {
@@ -260,6 +297,10 @@ function buildPrisma(): PrismaClientLike {
     },
     auditLog: {
       async create(args) {
+        if (auditCreateShouldFail) {
+          throw new Error("Audit log write failed");
+        }
+
         auditEntries.push(args.data);
         return args.data;
       },

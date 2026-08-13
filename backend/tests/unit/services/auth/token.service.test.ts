@@ -64,7 +64,7 @@ describe("token service", () => {
     expect(options).toMatchObject({
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "none",
       path: "/",
       maxAge: 3600000,
     });

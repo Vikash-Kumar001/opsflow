@@ -69,7 +69,7 @@ export type AuditLogRepositoryClient = {
   auditLog: AuditLogDelegate;
 };
 
-type AuthAuditInput = {
+export type AuthAuditInput = {
   actorId?: string | null | undefined;
   action: AuditAction;
   email?: string | undefined;
