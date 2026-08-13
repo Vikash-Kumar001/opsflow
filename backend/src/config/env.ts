@@ -43,10 +43,20 @@ export function parseCorsOrigins(
 ): string[] {
   const configuredOrigins = corsOrigins
     ?.split(",")
-    .map((origin) => origin.trim())
+    .map((origin) => normalizeCorsOrigin(origin.trim()))
     .filter(Boolean);
 
-  return configuredOrigins?.length ? configuredOrigins : [frontendOrigin];
+  return configuredOrigins?.length
+    ? configuredOrigins
+    : [normalizeCorsOrigin(frontendOrigin)];
+}
+
+function normalizeCorsOrigin(origin: string): string {
+  if (origin === "*") {
+    return origin;
+  }
+
+  return new URL(origin).origin;
 }
 
 export function parseEnv(source: NodeJS.ProcessEnv): Env {

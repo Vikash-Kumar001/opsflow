@@ -34,4 +34,20 @@ describe("environment parsing", () => {
       }),
     ).toThrow("Production CORS origins must not include wildcard origins");
   });
+
+  it("normalizes deployed CORS origin URLs before allowlisting", async () => {
+    const { parseEnv } = await import("../../../src/config/env.js");
+    const env = parseEnv({
+      ...validEnv,
+      NODE_ENV: "production",
+      FRONTEND_ORIGIN: "https://opsflow-phi.vercel.app/",
+      CORS_ORIGINS:
+        "https://opsflow-phi.vercel.app/, https://opsflow-5sn8.onrender.com/health",
+    });
+
+    expect(env.corsOrigins).toEqual([
+      "https://opsflow-phi.vercel.app",
+      "https://opsflow-5sn8.onrender.com",
+    ]);
+  });
 });
