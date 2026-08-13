@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum RequestStatus {
+  DRAFT
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum RequestPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum RequestCategory {
+  LEAVE
+  EXPENSE
+  EQUIPMENT
+  SOFTWARE_ACCESS
+  WORK_FROM_HOME
+  TRAVEL
+  PROCUREMENT
+  OTHER
+}
+
+enum AuditAction {
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOGOUT
+  REQUEST_CREATED
+  REQUEST_UPDATED
+  REQUEST_SUBMITTED
+  REQUEST_REVIEW_STARTED
+  REQUEST_CANCELLED
+  REQUEST_APPROVED
+  REQUEST_REJECTED
+  REQUEST_DELETED
+  COMMENT_CREATED
+  USER_CREATED
+  USER_UPDATED
+  USER_ACTIVATED
+  USER_DEACTIVATED
+  USER_ROLE_CHANGED
+}
+
+enum AuditEntityType {
+  AUTH
+  USER
+  REQUEST
+  COMMENT
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  name         String     @db.VarChar(120)
+  email        String     @unique @db.VarChar(255)
+  passwordHash String
+  role         Role       @default(EMPLOYEE)
+  isActive     Boolean    @default(true)
+  managerId    String?    @db.Uuid
+  manager      User?      @relation("UserManager", fields: [managerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reports      User[]     @relation("UserManager")
+  requests     Request[]  @relation("RequestCreator")
+  reviews      Request[]  @relation("RequestReviewer")
+  comments     Comment[]
+  auditEvents  AuditLog[] @relation("AuditActor")
+  targetAudits AuditLog[] @relation("AuditTargetUser")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([role])
+  @@index([isActive])
+  @@index([managerId])
+  @@index([createdAt])
+}
+
+model Request {
+  id              String          @id @default(uuid()) @db.Uuid
+  requestNumber   String          @unique @db.VarChar(32)
+  title           String          @db.VarChar(160)
+  description     String
+  category        RequestCategory
+  priority        RequestPriority @default(MEDIUM)
+  status          RequestStatus   @default(DRAFT)
+  createdById     String          @db.Uuid
+  createdBy       User            @relation("RequestCreator", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reviewedById    String?         @db.Uuid
+  reviewedBy      User?           @relation("RequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  reviewNotes     String?
+  rejectionReason String?
+  metadata        Json?
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  deletedAt       DateTime?
+  comments        Comment[]
+  auditEvents     AuditLog[]      @relation("AuditTargetRequest")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([createdById, status])
+  @@index([reviewedById])
+  @@index([status, createdAt])
+  @@index([category, createdAt])
+  @@index([priority, createdAt])
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+model Comment {
+  id          String     @id @default(uuid()) @db.Uuid
+  requestId   String     @db.Uuid
+  request     Request    @relation(fields: [requestId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  authorId    String     @db.Uuid
+  author      User       @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  content     String
+  auditEvents AuditLog[] @relation("AuditTargetComment")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([requestId, createdAt])
+  @@index([authorId])
+}
+
+model AuditLog {
+  id              String          @id @default(uuid()) @db.Uuid
+  actorId         String?         @db.Uuid
+  actor           User?           @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  action          AuditAction
+  entityType      AuditEntityType
+  targetUserId    String?         @db.Uuid
+  targetUser      User?           @relation("AuditTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  targetRequestId String?         @db.Uuid
+  targetRequest   Request?        @relation("AuditTargetRequest", fields: [targetRequestId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  targetCommentId String?         @db.Uuid
+  targetComment   Comment?        @relation("AuditTargetComment", fields: [targetCommentId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  metadata        Json?
+  ipAddress       String?         @db.VarChar(64)
+  userAgent       String?
+  createdAt       DateTime        @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([entityType, createdAt])
+  @@index([targetUserId])
+  @@index([targetRequestId])
+  @@index([targetCommentId])
+  @@index([createdAt])
+}
+
+model RequestNumberCounter {
+  id        String   @id @default("request") @db.VarChar(32)
+  nextValue BigInt   @default(1001)
+  updatedAt DateTime @updatedAt
+}

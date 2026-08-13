@@ -1,0 +1,27 @@
+# Local/project metadata that should never be committed
+.agents/
+AGENTS.md
+CLAUDE.md
+docs/
+.idea/
+.vscode/
+*.local
+
+# Node / frontend
+node_modules/
+.next/
+out/
+dist/
+.env
+.env.*
+!.env.example
+
+# Python / backend
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
