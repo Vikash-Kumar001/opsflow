@@ -114,8 +114,26 @@ export async function createRequestRecord(
   prisma: RequestRepositoryClient,
   input: RequestCreateInput,
 ): Promise<RequestSummaryRecord> {
+  const data: RequestCreateInput = {
+    requestNumber: input.requestNumber,
+    title: input.title,
+    description: input.description,
+    category: input.category,
+    priority: input.priority,
+    status: input.status,
+    createdById: input.createdById,
+  };
+
+  if (input.metadata !== undefined) {
+    data.metadata = input.metadata;
+  }
+
+  if (input.submittedAt !== undefined) {
+    data.submittedAt = input.submittedAt;
+  }
+
   return prisma.request.create({
-    data: input,
+    data,
     select: requestSummarySelect,
   });
 }

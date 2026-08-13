@@ -1,8 +1,8 @@
 import type { RequestHandler } from "express";
 
 import { getPrismaClient } from "../../lib/prisma.js";
-import { createAuthAuditLog } from "../../repositories/shared/audit-log.repository.js";
 import type { AuthUserPasswordRepositoryClient } from "../../repositories/shared/auth-user.repository.js";
+import { tryCreateAuthAuditLog } from "../../services/auth/auth-audit.service.js";
 import { changeCurrentUserPassword } from "../../services/auth/change-password.service.js";
 import { sendSuccess } from "../../utils/api-response.js";
 import type { ChangePasswordBody } from "../../validators/auth/change-password.schema.js";
@@ -20,7 +20,7 @@ export const changePasswordController: RequestHandler = async (
       req.body as ChangePasswordBody,
     );
 
-    await createAuthAuditLog(prisma, {
+    await tryCreateAuthAuditLog(prisma, {
       actorId: user.id,
       action: "PASSWORD_CHANGED",
       email: user.email,

@@ -109,8 +109,20 @@ export async function createAdminUserRecord(
   prisma: AdminUserRepositoryClient,
   input: AdminUserCreateInput,
 ): Promise<UserSummaryRecord> {
+  const data: AdminUserCreateInput = {
+    name: input.name,
+    email: input.email,
+    passwordHash: input.passwordHash,
+    role: input.role,
+    isActive: input.isActive,
+  };
+
+  if (input.managerId !== undefined) {
+    data.managerId = input.managerId;
+  }
+
   return prisma.user.create({
-    data: input,
+    data,
     select: userSummarySelect,
   });
 }

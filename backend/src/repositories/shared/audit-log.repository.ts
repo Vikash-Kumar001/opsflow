@@ -83,20 +83,43 @@ export async function createAuthAuditLog(
   prisma: AuditLogRepositoryClient,
   input: AuthAuditInput,
 ): Promise<void> {
+  const data: AuditLogCreateInput = {
+    action: input.action,
+    entityType: "AUTH",
+  };
+  const metadata: Record<string, unknown> = {};
+
+  if (input.actorId !== undefined) {
+    data.actorId = input.actorId;
+    data.targetUserId = input.actorId;
+  }
+
+  if (input.email !== undefined) {
+    metadata.email = input.email;
+  }
+
+  if (input.role !== undefined) {
+    metadata.role = input.role;
+  }
+
+  if (input.correlationId !== undefined) {
+    metadata.correlationId = input.correlationId;
+  }
+
+  if (Object.keys(metadata).length > 0) {
+    data.metadata = metadata;
+  }
+
+  if (input.ipAddress !== undefined) {
+    data.ipAddress = input.ipAddress;
+  }
+
+  if (input.userAgent !== undefined) {
+    data.userAgent = input.userAgent;
+  }
+
   await prisma.auditLog.create({
-    data: {
-      actorId: input.actorId,
-      action: input.action,
-      entityType: "AUTH",
-      targetUserId: input.actorId,
-      metadata: {
-        email: input.email,
-        role: input.role,
-        correlationId: input.correlationId,
-      },
-      ipAddress: input.ipAddress,
-      userAgent: input.userAgent,
-    },
+    data,
   });
 }
 
