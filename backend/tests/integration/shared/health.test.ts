@@ -11,6 +11,26 @@ beforeAll(() => {
 });
 
 describe("health route", () => {
+  it("returns API metadata at the service root", async () => {
+    const { app } = await import("../../../src/app.js");
+
+    const response = await request(app)
+      .get("/")
+      .set("x-request-id", "root-request-id")
+      .expect(200);
+
+    expect(response.body).toEqual({
+      success: true,
+      data: {
+        status: "ok",
+        service: "opsflow-api",
+        health: "/api/v1/health",
+        apiBase: "/api/v1",
+      },
+      requestId: "root-request-id",
+    });
+  });
+
   it("returns standard success response with request id", async () => {
     const { app } = await import("../../../src/app.js");
 

@@ -20,6 +20,7 @@ import { managerDashboardRouter } from "./routes/manager/manager-dashboard.route
 import { managerRequestRouter } from "./routes/manager/manager-request.routes.js";
 import { healthRouter } from "./routes/shared/health.routes.js";
 import { requestRouter } from "./routes/shared/request.routes.js";
+import { rootRouter } from "./routes/shared/root.routes.js";
 import { logger } from "./utils/logger.js";
 
 export const app = express();
@@ -51,6 +52,7 @@ app.use(
   }),
 );
 
+app.use("/", rootRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/requests", requestRouter);
 app.use("/api/v1/admin/audit-logs", adminAuditRouter);
