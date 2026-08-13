@@ -446,6 +446,34 @@ describe("manager request routes", () => {
     );
   });
 
+  it("rejects a pending team request from the approval queue", async () => {
+    const agent = await loginAs("manager@opsflow.demo", "Manager@123");
+
+    const response = await agent
+      .patch(
+        "/api/v1/manager/requests/10000000-0000-4000-8000-000000000000/reject",
+      )
+      .send({
+        rejectionReason: "The request needs additional context.",
+      })
+      .expect(200);
+
+    expect(response.body.data.request).toMatchObject({
+      id: "10000000-0000-4000-8000-000000000000",
+      status: "REJECTED",
+      rejectionReason: "The request needs additional context.",
+      reviewer: expect.objectContaining({
+        id: "manager-1",
+      }),
+    });
+    expect(auditEntries).toContainEqual(
+      expect.objectContaining({
+        action: "REQUEST_REJECTED",
+        targetRequestId: "10000000-0000-4000-8000-000000000000",
+      }),
+    );
+  });
+
   it("rejects empty rejection reasons", async () => {
     const agent = await loginAs("manager@opsflow.demo", "Manager@123");
 

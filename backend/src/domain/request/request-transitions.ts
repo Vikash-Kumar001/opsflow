@@ -3,7 +3,7 @@ import type { RequestStatus } from "./request.constants.js";
 
 export const REQUEST_STATUS_TRANSITIONS = {
   DRAFT: ["PENDING", "CANCELLED"],
-  PENDING: ["IN_REVIEW", "CANCELLED"],
+  PENDING: ["IN_REVIEW", "APPROVED", "REJECTED", "CANCELLED"],
   IN_REVIEW: ["APPROVED", "REJECTED"],
   APPROVED: [],
   REJECTED: [],

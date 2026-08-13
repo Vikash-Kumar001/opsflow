@@ -18,6 +18,8 @@ describe("request workflow rules", () => {
     expect(canTransitionRequestStatus("DRAFT", "PENDING")).toBe(true);
     expect(canTransitionRequestStatus("DRAFT", "CANCELLED")).toBe(true);
     expect(canTransitionRequestStatus("PENDING", "IN_REVIEW")).toBe(true);
+    expect(canTransitionRequestStatus("PENDING", "APPROVED")).toBe(true);
+    expect(canTransitionRequestStatus("PENDING", "REJECTED")).toBe(true);
     expect(canTransitionRequestStatus("PENDING", "CANCELLED")).toBe(true);
     expect(canTransitionRequestStatus("IN_REVIEW", "APPROVED")).toBe(true);
     expect(canTransitionRequestStatus("IN_REVIEW", "REJECTED")).toBe(true);
@@ -27,7 +29,7 @@ describe("request workflow rules", () => {
     expect(canTransitionRequestStatus("APPROVED", "PENDING")).toBe(false);
     expect(canTransitionRequestStatus("REJECTED", "DRAFT")).toBe(false);
     expect(canTransitionRequestStatus("CANCELLED", "PENDING")).toBe(false);
-    expect(canTransitionRequestStatus("PENDING", "APPROVED")).toBe(false);
+    expect(canTransitionRequestStatus("DRAFT", "APPROVED")).toBe(false);
   });
 
   it("throws a domain error for invalid transitions", () => {
@@ -37,6 +39,12 @@ describe("request workflow rules", () => {
   });
 
   it("exposes valid transition choices for a status", () => {
+    expect(getValidRequestTransitions("PENDING")).toEqual([
+      "IN_REVIEW",
+      "APPROVED",
+      "REJECTED",
+      "CANCELLED",
+    ]);
     expect(getValidRequestTransitions("IN_REVIEW")).toEqual([
       "APPROVED",
       "REJECTED",
