@@ -16,7 +16,7 @@ describe("request number repository", () => {
 
     const prisma: RequestNumberRepositoryClient = {
       requestNumberCounter: {
-        async update() {
+        async upsert() {
           nextValue += 1n;
 
           return {
@@ -28,5 +28,19 @@ describe("request number repository", () => {
 
     await expect(generateNextRequestNumber(prisma)).resolves.toBe("REQ-1001");
     await expect(generateNextRequestNumber(prisma)).resolves.toBe("REQ-1002");
+  });
+
+  it("initializes the counter when the production row is missing", async () => {
+    const prisma: RequestNumberRepositoryClient = {
+      requestNumberCounter: {
+        async upsert(args) {
+          return {
+            nextValue: args.create.nextValue,
+          };
+        },
+      },
+    };
+
+    await expect(generateNextRequestNumber(prisma)).resolves.toBe("REQ-1001");
   });
 });

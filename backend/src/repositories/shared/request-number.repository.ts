@@ -5,9 +5,10 @@ type RequestNumberCounterRecord = {
 };
 
 type RequestNumberCounterDelegate = {
-  update(args: {
+  upsert(args: {
     where: { id: string };
-    data: { nextValue: { increment: bigint } };
+    create: { id: string; nextValue: bigint };
+    update: { nextValue: { increment: bigint } };
     select: { nextValue: true };
   }): Promise<RequestNumberCounterRecord>;
 };
@@ -25,9 +26,13 @@ export function formatRequestNumber(value: bigint): string {
 export async function generateNextRequestNumber(
   prisma: RequestNumberRepositoryClient,
 ): Promise<string> {
-  const counter = await prisma.requestNumberCounter.update({
+  const counter = await prisma.requestNumberCounter.upsert({
     where: { id: REQUEST_NUMBER_COUNTER_ID },
-    data: {
+    create: {
+      id: REQUEST_NUMBER_COUNTER_ID,
+      nextValue: 1002n,
+    },
+    update: {
       nextValue: {
         increment: 1n,
       },

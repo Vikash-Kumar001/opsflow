@@ -626,8 +626,7 @@ function buildPrisma(): PrismaClientLike {
       },
     },
     requestNumberCounter: {
-      async update() {
-        const value = nextRequestNumber;
+      async upsert() {
         nextRequestNumber += 1n;
 
         return { nextValue: nextRequestNumber };
