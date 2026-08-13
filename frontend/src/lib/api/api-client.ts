@@ -49,8 +49,9 @@ export async function apiRequest<TData>(
 
 function buildApiUrl(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const apiBaseUrl = publicEnv.NEXT_PUBLIC_API_URL.replace(/\/+$/, "");
 
-  return `${publicEnv.NEXT_PUBLIC_API_URL}${normalizedPath}`;
+  return `${apiBaseUrl}${normalizedPath}`;
 }
 
 async function parseApiResponse<TData>(

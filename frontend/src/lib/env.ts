@@ -1,7 +1,12 @@
 import { z } from "zod";
 
 const publicEnvSchema = z.object({
-  NEXT_PUBLIC_API_URL: z.string().url(),
+  NEXT_PUBLIC_API_URL: z
+    .string()
+    .min(1)
+    .refine(isValidApiBaseUrl, {
+      message: "Must be an absolute URL or root-relative path",
+    }),
 });
 
 export type PublicEnv = z.infer<typeof publicEnvSchema>;
@@ -25,3 +30,11 @@ export function parsePublicEnv(
 export const publicEnv = parsePublicEnv({
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
 });
+
+function isValidApiBaseUrl(value: string): boolean {
+  if (value.startsWith("/")) {
+    return true;
+  }
+
+  return z.string().url().safeParse(value).success;
+}
